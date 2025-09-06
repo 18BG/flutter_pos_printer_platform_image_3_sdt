@@ -1,0 +1,6 @@
+framework module universal_ble {
+  umbrella header "universal_ble-umbrella.h"
+
+  export *
+  module * { export * }
+}
