@@ -51,6 +51,9 @@ static dispatch_once_t once;
             _bleConnecter = [BLEConnecter new];
             _connecter = _bleConnecter;
             break;
+        case ETHERNET:
+            _connecter = [EthernetConnecter new];
+            break;
         default:
             break;
     }
@@ -78,7 +81,7 @@ static dispatch_once_t once;
     [_bleConnecter write:data progress:progress receCallBack:callBack];
 }
 
--(void)write:(NSData *)data receCallBack:(void (^)(NSData *))callBack {
+-(void)write:(NSData *_Nullable)data receCallBack:(void (^_Nullable)(NSData *_Nullable))callBack {
 #ifdef DEBUG
     NSLog(@"[ConnecterManager] write:receCallBack:");
 #endif
@@ -86,7 +89,7 @@ static dispatch_once_t once;
     [_connecter write:data receCallBack:callBack];
 }
 
--(void)write:(NSData *)data {
+-(void)write:(NSData *_Nullable)data {
 #ifdef DEBUG
     NSLog(@"[ConnecterManager] write:");
 #endif
@@ -101,6 +104,9 @@ static dispatch_once_t once;
     switch (currentConnMethod) {
         case BLUETOOTH:
             _bleConnecter = nil;
+            break;
+        case ETHERNET:
+            //_connecter = nil;
             break;
     }
 }
