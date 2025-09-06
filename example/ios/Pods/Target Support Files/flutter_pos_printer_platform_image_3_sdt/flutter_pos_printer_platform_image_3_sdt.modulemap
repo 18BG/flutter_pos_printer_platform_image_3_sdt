@@ -1,0 +1,6 @@
+framework module flutter_pos_printer_platform_image_3_sdt {
+  umbrella header "flutter_pos_printer_platform_image_3_sdt-umbrella.h"
+
+  export *
+  module * { export * }
+}

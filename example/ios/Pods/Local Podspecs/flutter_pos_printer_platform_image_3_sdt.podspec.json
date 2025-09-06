@@ -1,0 +1,33 @@
+{
+  "name": "flutter_pos_printer_platform_image_3_sdt",
+  "version": "0.0.1",
+  "summary": "A new Flutter plugin project.",
+  "description": "A new Flutter plugin project.",
+  "homepage": "http://example.com",
+  "license": {
+    "file": "../LICENSE"
+  },
+  "authors": {
+    "Your Company": "email@example.com"
+  },
+  "source": {
+    "path": "."
+  },
+  "source_files": "Classes/**/*",
+  "public_header_files": "Classes/**/*.h",
+  "static_framework": true,
+  "dependencies": {
+    "Flutter": [
+
+    ]
+  },
+  "platforms": {
+    "ios": "9.0"
+  },
+  "frameworks": [
+    "SystemConfiguration",
+    "CoreTelephony",
+    "WebKit"
+  ],
+  "vendored_libraries": "**/*.a"
+}
