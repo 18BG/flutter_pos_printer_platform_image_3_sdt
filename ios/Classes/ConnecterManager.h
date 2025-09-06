@@ -22,8 +22,8 @@ typedef enum : NSUInteger{
 #define Manager [ConnecterManager sharedInstance]
 
 @interface ConnecterManager : NSObject
-@property(nonatomic,strong)BLEConnecter *bleConnecter;
-@property(nonatomic,strong)Connecter *connecter;
+@property(nonatomic,strong, nullable)BLEConnecter *bleConnecter;
+@property(nonatomic,strong,nullable)Connecter *connecter;
 
 +(instancetype)sharedInstance;
 
@@ -44,13 +44,13 @@ typedef enum : NSUInteger{
  *  方法说明：向输出流中写入数据 // Method description: writing data to the output stream
  *  @param callBack 读取数据接口
  */
--(void)write:(NSData *)data receCallBack:(void (^)(NSData *))callBack;
+-(void)write:(NSData *_Nullable)data receCallBack:(void (^_Nullable)(NSData *_Nullable))callBack;
 
 /**
  *  方法说明：向输出流中写入数据 // Method description: writing data to the output stream
  *  @param data 需要写入的数据
  */
--(void)write:(NSData *)data;
+-(void)write:(NSData *_Nullable)data;
 
 /**
  *  方法说明：停止扫描
@@ -61,7 +61,7 @@ typedef enum : NSUInteger{
  *  方法说明：更新蓝牙状态
  *  @param state 蓝牙状态
  */
--(void)didUpdateState:(void(^)(NSInteger state))state;
+-(void)didUpdateState:(void(^_Nullable)(NSInteger state))state;
 
 /**
  *  方法说明：连接外设
@@ -70,14 +70,14 @@ typedef enum : NSUInteger{
  *  @param timeout 连接时间
  *  @param connectState 连接状态
  */
--(void)connectPeripheral:(CBPeripheral *)peripheral options:(nullable NSDictionary<NSString *,id> *)options timeout:(NSUInteger)timeout connectBlack:(void(^_Nullable)(ConnectState state)) connectState;
+-(void)connectPeripheral:(CBPeripheral *_Nullable)peripheral options:(nullable NSDictionary<NSString *,id> *)options timeout:(NSUInteger)timeout connectBlack:(void(^_Nullable)(ConnectState state)) connectState;
 
 /**
  *  方法说明：连接外设
  *  @param peripheral 需连接的外设
  *  @param options 其它可选操作
  */
--(void)connectPeripheral:(CBPeripheral * _Nullable)peripheral options:(nullable NSDictionary<NSString *,id> *)options;
+-(void)connectPeripheral:(CBPeripheral * _Nullable)peripheral options:(nullable NSDictionary<NSString *,id> *_Nullable)options;
 
 /**
  *  方法说明：扫描外设
@@ -85,7 +85,7 @@ typedef enum : NSUInteger{
  *  @param options  其它可选操作
  *  @param discover 发现的设备
  */
--(void)scanForPeripheralsWithServices:(nullable NSArray<CBUUID *> *)serviceUUIDs options:(nullable NSDictionary<NSString *, id> *)options discover:(void(^_Nullable)(CBPeripheral *_Nullable peripheral,NSDictionary<NSString *, id> *_Nullable advertisementData,NSNumber *_Nullable RSSI))discover;
+-(void)scanForPeripheralsWithServices:(nullable NSArray<CBUUID *> *_Nullable)serviceUUIDs options:(nullable NSDictionary<NSString *, id> *_Nullable)options discover:(void(^_Nullable)(CBPeripheral *_Nullable peripheral,NSDictionary<NSString *, id> *_Nullable advertisementData,NSNumber *_Nullable RSSI))discover;
 
 
 
