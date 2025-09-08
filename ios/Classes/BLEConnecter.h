@@ -48,7 +48,7 @@
  *         advertisementData
  *         RSSI 外设信号强度
  */
--(void)scanForPeripheralsWithServices:(nullable NSArray<CBUUID *> *_Nullable)serviceUUIDs options:(nullable NSDictionary<NSString *, id> *_Nullable)options discover:(void(^_Nullable)(CBPeripheral *_Nullable peripheral,NSDictionary<NSString *, id> *_Nullable advertisementData,NSNumber *_Nullable RSSI))discover;
+-(void)scanForPeripheralsWithServices:(NSArray<CBUUID *> * _Nullable)serviceUUIDs options:(NSDictionary<NSString *, id> * _Nullable)options discover:(void(^_Nullable)(CBPeripheral *_Nullable peripheral,NSDictionary<NSString *, id> *_Nullable advertisementData,NSNumber *_Nullable RSSI))discover;
 
 /**
  *  方法说明：停止扫描蓝牙外设
@@ -75,7 +75,7 @@
  *  @param peripheral 需要连接的外设
  *  @param options 其它可选操作
  */
--(void)connectPeripheral:(CBPeripheral * _Nullable)peripheral options:(nullable NSDictionary<NSString *,id> *_Nullable)options;
+-(void)connectPeripheral:(CBPeripheral * _Nullable)peripheral options:(NSDictionary<NSString *,id> * _Nullable)options;
 
 /**
  *  方法说明：断开连接
@@ -89,14 +89,14 @@
  *  @param  progress 写入数据的进度 // Progress of writing data
  *  @param callBack 读取蓝牙模块返回数据 // Read Bluetooth module data
  */
--(void)write:(nonnull NSData *)data progress:(void(^)(NSUInteger total,NSUInteger progress))progress receCallBack:(nonnull void (^)(NSData *_Nullable))callBack;
+-(void)write:(nonnull NSData *)data progress:(void(^_Nullable)(NSUInteger total,NSUInteger progress))progress receCallBack:(nonnull void (^)(NSData *_Nullable))callBack;
 
 /**
  *  方法说明: 往蓝牙模块中写入数据 // Method description: write data to Bluetooth module
  *  @param  data 往蓝牙模块中写入的数据 // Data written to the Bluetooth module
  *  @param callBack 读取蓝牙模块返回数据 // Read Bluetooth module data
  */
--(void)write:(nonnull NSData *)data receCallBack:(nonnull void (^)(NSData *))callBack;
+-(void)write:(nonnull NSData *)data receCallBack:(nonnull void (^)(NSData * _Nullable))callBack;
 
 /**
  *  方法说明: 往蓝牙模块中写入数据 // Method description: write data to Bluetooth module

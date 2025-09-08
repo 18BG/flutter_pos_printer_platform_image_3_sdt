@@ -47,20 +47,20 @@
       if (Manager.bleConnecter == nil) {
           [Manager didUpdateState:^(NSInteger state) {
               switch (state) {
-                  case CBCentralManagerStateUnsupported:
+                  case CBManagerStateUnsupported:
                       NSLog(@"The platform/hardware doesn't support Bluetooth Low Energy.");
                       break;
-                  case CBCentralManagerStateUnauthorized:
+                  case CBManagerStateUnauthorized:
                       NSLog(@"The app is not authorized to use Bluetooth Low Energy.");
                       break;
-                  case CBCentralManagerStatePoweredOff:
+                  case CBManagerStatePoweredOff:
                       NSLog(@"Bluetooth is currently powered off.");
                       break;
-                  case CBCentralManagerStatePoweredOn:
+                  case CBManagerStatePoweredOn:
                       [self startScan];
                       NSLog(@"Bluetooth power on");
                       break;
-                  case CBCentralManagerStateUnknown:
+                  case CBManagerStateUnknown:
                   default:
                       break;
               }
@@ -78,9 +78,10 @@
     @try {
       NSLog(@"connect device begin -> %@", [device objectForKey:@"name"]);
       CBPeripheral *peripheral = [_scannedPeripherals objectForKey:[device objectForKey:@"address"]];
-        
+      
+      __weak typeof(self) weakSelf = self;
       self.state = ^(ConnectState state) {
-        [self updateConnectState:state];
+        [weakSelf updateConnectState:state];
       };
       [Manager connectPeripheral:peripheral options:nil timeout:2 connectBlack: self.state];
       
@@ -127,7 +128,7 @@
             [self.scannedPeripherals setObject:peripheral forKey:[[peripheral identifier] UUIDString]];
             
             NSDictionary *device = [NSDictionary dictionaryWithObjectsAndKeys:peripheral.identifier.UUIDString,@"address",peripheral.name,@"name",nil,@"type",nil];
-            [_channel invokeMethod:@"ScanResult" arguments:device];
+            [self->_channel invokeMethod:@"ScanResult" arguments:device];
         }
     }];
     
@@ -160,7 +161,7 @@
         }
         
          NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:ret,@"id",nil];
-        if(_stateStreamHandler.sink != nil) {
+        if(self->_stateStreamHandler.sink != nil) {
           self.stateStreamHandler.sink([dict objectForKey:@"id"]);
         }
     });
