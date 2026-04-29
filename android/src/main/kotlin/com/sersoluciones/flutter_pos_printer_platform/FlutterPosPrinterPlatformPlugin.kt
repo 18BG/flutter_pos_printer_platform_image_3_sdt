@@ -283,11 +283,12 @@ class FlutterPosPrinterPlatformPlugin : FlutterPlugin, MethodCallHandler, Plugin
                     }
                 } ?: Log.d("BUMO_PRINTER_PLUGIN", "sendDataByte: context=null, cannot log permission state")
 
-                val isBluetoothOn = verifyIsBluetoothIsOn()
-                Log.d("BUMO_PRINTER_PLUGIN", "sendDataByte: verifyIsBluetoothIsOn=$isBluetoothOn")
+                // val isBluetoothOn = verifyIsBluetoothIsOn()
+                val canWritBluetooth = canWriteBluetooth()
+                Log.d("BUMO_PRINTER_PLUGIN", "sendDataByte: verifyIsBluetoothIsOn=$canWritBluetooth")
                 Log.d("BUMO_PRINTER_PLUGIN", "sendDataByte: bluetoothConnectionState=${BluetoothService.bluetoothConnection?.state}")
                 Log.d("BUMO_PRINTER_PLUGIN", "sendDataByte: bluetoothConnectionClass=${BluetoothService.bluetoothConnection?.javaClass?.name}")
-                if (isBluetoothOn) {
+                if (canWritBluetooth) {
                     bluetoothService.setHandler(bluetoothHandler)
                     val listInt: ArrayList<Int>? = call.argument("bytes")
                     Log.d("BUMO_PRINTER_PLUGIN", "sendDataByte: listIntSize=${listInt?.size}")
@@ -356,6 +357,18 @@ class FlutterPosPrinterPlatformPlugin : FlutterPlugin, MethodCallHandler, Plugin
         } else return false
         return true
     }
+
+    private fun canWriteBluetooth(): Boolean {
+    val permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        arrayOf(Manifest.permission.BLUETOOTH_CONNECT)
+    } else {
+        arrayOf(Manifest.permission.BLUETOOTH)
+    }
+
+    return hasPermissions(context, *permissions) &&
+        bluetoothService.mBluetoothAdapter.isEnabled
+}
+
 
     private fun getUSBDeviceList(result: Result) {
         val usbDevices: List<UsbDevice> = adapter.deviceList
