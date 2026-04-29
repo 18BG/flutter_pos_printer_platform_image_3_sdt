@@ -209,6 +209,9 @@ class BluetoothPrinterConnector
 
   /// Stops a scan for Bluetooth Low Energy devices
   Future stopScan() async {
+    if (Platform.isAndroid) {
+      await flutterPrinterChannel.invokeMethod('stopClassicPrinterDiscovery');
+    }
     if (Platform.isIOS) await iosChannel.invokeMethod('stopScan');
     _stopScanPill.add(null);
     _isScanning.add(false);

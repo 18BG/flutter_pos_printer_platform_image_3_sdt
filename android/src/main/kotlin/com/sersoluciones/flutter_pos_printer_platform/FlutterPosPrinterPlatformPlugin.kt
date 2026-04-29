@@ -267,6 +267,11 @@ class FlutterPosPrinterPlatformPlugin : FlutterPlugin, MethodCallHandler, Plugin
                 }
             }
 
+            call.method.equals("stopClassicPrinterDiscovery") -> {
+                bluetoothService.stopClassicPrinterDiscovery()
+                result.success(true)
+            }
+
             call.method.equals("onStartConnection") -> {
                 val address: String? = call.argument("address")
                 val isBle: Boolean? = call.argument("isBle")

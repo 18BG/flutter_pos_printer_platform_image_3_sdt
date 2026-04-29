@@ -6,8 +6,10 @@ import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothManager
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
@@ -24,6 +26,10 @@ class BluetoothService(mContext: Context, private var bluetoothHandler: Handler?
     private val mHandlerAutoConnect = Handler(Looper.getMainLooper())
     private var reconnectBluetooth = false
     private var result: Result? = null
+    private val appContext: Context = mContext.applicationContext
+    private var classicDiscoveryReceiver: BroadcastReceiver? = null
+    private var classicDiscoveryChannel: MethodChannel? = null
+    private val classicDiscoveryAddresses: MutableSet<String> = mutableSetOf()
 
     val mBluetoothAdapter: BluetoothAdapter by lazy {
         val bluetoothManager = mContext.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
@@ -55,9 +61,15 @@ class BluetoothService(mContext: Context, private var bluetoothHandler: Handler?
             val deviceName =
                 if (device.name == null) device.address else device.name
             val deviceHardwareAddress = device.address // MAC address
-            val deviceMap: HashMap<String?, String?> = HashMap()
+            val majorClass = device.bluetoothClass?.majorDeviceClass
+            val deviceMap: HashMap<String, Any?> = HashMap()
             deviceMap["name"] = deviceName
             deviceMap["address"] = deviceHardwareAddress
+            deviceMap["isBle"] = false
+            deviceMap["type"] = "bluetooth"
+            deviceMap["majorClass"] = majorClass
+            deviceMap["isLikelyPrinter"] = majorClass == 1536
+            deviceMap["source"] = "bonded"
             list.add(deviceMap)
             Log.d(TAG, "deviceName $deviceName deviceHardwareAddress $deviceHardwareAddress")
 
@@ -67,6 +79,96 @@ class BluetoothService(mContext: Context, private var bluetoothHandler: Handler?
 //            devicesSink?.success(deviceMap)
         }
 
+        startClassicPrinterDiscovery(mChannel)
+    }
+
+    fun startClassicPrinterDiscovery(mChannel: MethodChannel) {
+        Log.d("BUMO_PRINTER_PLUGIN", "BluetoothService.startClassicPrinterDiscovery: enter")
+        classicDiscoveryChannel = mChannel
+        classicDiscoveryAddresses.clear()
+
+        if (mBluetoothAdapter.isDiscovering) {
+            Log.d("BUMO_PRINTER_PLUGIN", "BluetoothService.startClassicPrinterDiscovery: cancel previous discovery")
+            mBluetoothAdapter.cancelDiscovery()
+        }
+
+        if (classicDiscoveryReceiver == null) {
+            classicDiscoveryReceiver = object : BroadcastReceiver() {
+                override fun onReceive(context: Context, intent: Intent) {
+                    when (intent.action) {
+                        BluetoothDevice.ACTION_FOUND -> {
+                            @Suppress("DEPRECATION")
+                            val device: BluetoothDevice? =
+                                intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE)
+                            val address = device?.address
+
+                            if (address.isNullOrEmpty()) {
+                                Log.d("BUMO_PRINTER_PLUGIN", "BluetoothService.startClassicPrinterDiscovery: ignore device with empty address")
+                                return
+                            }
+
+                            if (!classicDiscoveryAddresses.add(address)) {
+                                Log.d("BUMO_PRINTER_PLUGIN", "BluetoothService.startClassicPrinterDiscovery: ignore duplicate address=$address")
+                                return
+                            }
+
+                            val deviceName = if (device.name == null) address else device.name
+                            val majorClass = device.bluetoothClass?.majorDeviceClass
+                            val deviceMap: HashMap<String, Any?> = HashMap()
+                            deviceMap["name"] = deviceName
+                            deviceMap["address"] = address
+                            deviceMap["isBle"] = false
+                            deviceMap["type"] = "bluetooth"
+                            deviceMap["majorClass"] = majorClass
+                            deviceMap["isLikelyPrinter"] = majorClass == 1536
+                            deviceMap["source"] = "classic_discovery"
+
+                            Log.d("BUMO_PRINTER_PLUGIN", "BluetoothService.startClassicPrinterDiscovery: found name=$deviceName address=$address type=${device.type} bondState=${device.bondState} majorClass=$majorClass isLikelyPrinter=${majorClass == 1536}")
+                            classicDiscoveryChannel?.invokeMethod("ScanResult", deviceMap)
+                        }
+                        BluetoothAdapter.ACTION_DISCOVERY_FINISHED -> {
+                            Log.d("BUMO_PRINTER_PLUGIN", "BluetoothService.startClassicPrinterDiscovery: discovery finished count=${classicDiscoveryAddresses.size}")
+                            bluetoothHandler?.obtainMessage(BluetoothConstants.MESSAGE_STOP_SCANNING, -1, -1)
+                                ?.sendToTarget()
+                        }
+                    }
+                }
+            }
+
+            val filter = IntentFilter()
+            filter.addAction(BluetoothDevice.ACTION_FOUND)
+            filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED)
+            appContext.registerReceiver(classicDiscoveryReceiver, filter)
+        }
+
+        val started = mBluetoothAdapter.startDiscovery()
+        Log.d("BUMO_PRINTER_PLUGIN", "BluetoothService.startClassicPrinterDiscovery: startDiscovery=$started")
+        if (!started) {
+            bluetoothHandler?.obtainMessage(BluetoothConstants.MESSAGE_STOP_SCANNING, -1, -1)
+                ?.sendToTarget()
+        }
+    }
+
+    fun stopClassicPrinterDiscovery() {
+        Log.d("BUMO_PRINTER_PLUGIN", "BluetoothService.stopClassicPrinterDiscovery: enter")
+
+        if (mBluetoothAdapter.isDiscovering) {
+            mBluetoothAdapter.cancelDiscovery()
+            Log.d("BUMO_PRINTER_PLUGIN", "BluetoothService.stopClassicPrinterDiscovery: cancelDiscovery called")
+        }
+
+        classicDiscoveryReceiver?.let { receiver ->
+            try {
+                appContext.unregisterReceiver(receiver)
+                Log.d("BUMO_PRINTER_PLUGIN", "BluetoothService.stopClassicPrinterDiscovery: receiver unregistered")
+            } catch (e: Exception) {
+                Log.d("BUMO_PRINTER_PLUGIN", "BluetoothService.stopClassicPrinterDiscovery: receiver unregister ignored ${e.message}")
+            }
+        }
+
+        classicDiscoveryReceiver = null
+        classicDiscoveryChannel = null
+        classicDiscoveryAddresses.clear()
         bluetoothHandler?.obtainMessage(BluetoothConstants.MESSAGE_STOP_SCANNING, -1, -1)
             ?.sendToTarget()
     }
