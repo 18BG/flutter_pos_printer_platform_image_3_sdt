@@ -25,7 +25,7 @@ typedef enum : NSUInteger{
 @property(nonatomic,strong, nullable)BLEConnecter *bleConnecter;
 @property(nonatomic,strong,nullable)Connecter *connecter;
 
-+(instancetype)sharedInstance;
++(instancetype _Nonnull)sharedInstance;
 
 /**
  *  方法说明：关闭连接
@@ -77,7 +77,7 @@ typedef enum : NSUInteger{
  *  @param peripheral 需连接的外设
  *  @param options 其它可选操作
  */
--(void)connectPeripheral:(CBPeripheral * _Nullable)peripheral options:(nullable NSDictionary<NSString *,id> *_Nullable)options;
+-(void)connectPeripheral:(CBPeripheral * _Nullable)peripheral options:(NSDictionary<NSString *,id> * _Nullable)options;
 
 /**
  *  方法说明：扫描外设
@@ -85,8 +85,7 @@ typedef enum : NSUInteger{
  *  @param options  其它可选操作
  *  @param discover 发现的设备
  */
--(void)scanForPeripheralsWithServices:(nullable NSArray<CBUUID *> *_Nullable)serviceUUIDs options:(nullable NSDictionary<NSString *, id> *_Nullable)options discover:(void(^_Nullable)(CBPeripheral *_Nullable peripheral,NSDictionary<NSString *, id> *_Nullable advertisementData,NSNumber *_Nullable RSSI))discover;
-
+-(void)scanForPeripheralsWithServices:(NSArray<CBUUID *> * _Nullable)serviceUUIDs options:(NSDictionary<NSString *, id> * _Nullable)options discover:(void(^_Nullable)(CBPeripheral *_Nullable peripheral,NSDictionary<NSString *, id> *_Nullable advertisementData,NSNumber *_Nullable RSSI))discover;
 
 
 
