@@ -227,13 +227,27 @@ class FlutterPosPrinterPlatformPlugin : FlutterPlugin, MethodCallHandler, Plugin
             }
 
             call.method.equals("getBondedBluetoothPrinters") -> {
+                Log.d("BUMO_PRINTER_PLUGIN", "getBondedBluetoothPrinters: enter")
+                Log.d("BUMO_PRINTER_PLUGIN", "getBondedBluetoothPrinters: sdk=${Build.VERSION.SDK_INT}")
+
                 val permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                     arrayOf(Manifest.permission.BLUETOOTH_CONNECT)
                 } else {
                     arrayOf(Manifest.permission.BLUETOOTH)
                 }
 
+                Log.d("BUMO_PRINTER_PLUGIN", "getBondedBluetoothPrinters: requiredPermissions=${permissions.joinToString()}")
+
+                context?.let { appContext ->
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                        Log.d("BUMO_PRINTER_PLUGIN", "getBondedBluetoothPrinters: permission BLUETOOTH_CONNECT=${ActivityCompat.checkSelfPermission(appContext, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED}")
+                    } else {
+                        Log.d("BUMO_PRINTER_PLUGIN", "getBondedBluetoothPrinters: permission BLUETOOTH=${ActivityCompat.checkSelfPermission(appContext, Manifest.permission.BLUETOOTH) == PackageManager.PERMISSION_GRANTED}")
+                    }
+                } ?: Log.d("BUMO_PRINTER_PLUGIN", "getBondedBluetoothPrinters: context=null, cannot log permission state")
+
                 if (!hasPermissions(context, *permissions)) {
+                    Log.d("BUMO_PRINTER_PLUGIN", "getBondedBluetoothPrinters: result empty because required permission is missing")
                     if (!isCalledRequestPermission) {
                         currentActivity?.let { activity ->
                             isCalledRequestPermission = true
@@ -242,9 +256,14 @@ class FlutterPosPrinterPlatformPlugin : FlutterPlugin, MethodCallHandler, Plugin
                     }
                     result.success(arrayListOf<HashMap<String, Any?>>())
                 } else if (!bluetoothService.mBluetoothAdapter.isEnabled) {
+                    Log.d("BUMO_PRINTER_PLUGIN", "getBondedBluetoothPrinters: adapterEnabled=false")
+                    Log.d("BUMO_PRINTER_PLUGIN", "getBondedBluetoothPrinters: result empty because adapter is disabled")
                     result.success(arrayListOf<HashMap<String, Any?>>())
                 } else {
-                    result.success(bluetoothService.getBondedBluetoothPrinters())
+                    Log.d("BUMO_PRINTER_PLUGIN", "getBondedBluetoothPrinters: adapterEnabled=true")
+                    val bondedPrinters = bluetoothService.getBondedBluetoothPrinters()
+                    Log.d("BUMO_PRINTER_PLUGIN", "getBondedBluetoothPrinters: returnedCount=${bondedPrinters.size}")
+                    result.success(bondedPrinters)
                 }
             }
 

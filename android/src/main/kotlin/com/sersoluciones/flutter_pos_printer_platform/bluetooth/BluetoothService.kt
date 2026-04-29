@@ -72,24 +72,33 @@ class BluetoothService(mContext: Context, private var bluetoothHandler: Handler?
     }
 
     fun getBondedBluetoothPrinters(): ArrayList<HashMap<String, Any?>> {
+        Log.d("BUMO_PRINTER_PLUGIN", "BluetoothService.getBondedBluetoothPrinters: enter")
+
         val printers = ArrayList<HashMap<String, Any?>>()
         val pairedDevices: Set<BluetoothDevice>? = mBluetoothAdapter.bondedDevices
 
+        Log.d("BUMO_PRINTER_PLUGIN", "BluetoothService.getBondedBluetoothPrinters: bondedDevicesCount=${pairedDevices?.size ?: 0}")
+
         pairedDevices?.forEach { device ->
             val majorClass = device.bluetoothClass?.majorDeviceClass
+            val isLikelyPrinter = majorClass == 1536
             val deviceName = if (device.name == null) device.address else device.name
             val deviceMap: HashMap<String, Any?> = HashMap()
+
+            Log.d("BUMO_PRINTER_PLUGIN", "BluetoothService.getBondedBluetoothPrinters: device name=$deviceName address=${device.address} type=${device.type} bondState=${device.bondState} majorClass=$majorClass isLikelyPrinter=$isLikelyPrinter")
 
             deviceMap["name"] = deviceName
             deviceMap["address"] = device.address
             deviceMap["isBle"] = false
             deviceMap["type"] = "bluetooth"
             deviceMap["majorClass"] = majorClass
-            deviceMap["isLikelyPrinter"] = majorClass == 1536
+            deviceMap["isLikelyPrinter"] = isLikelyPrinter
             deviceMap["source"] = "bonded"
 
             printers.add(deviceMap)
         }
+
+        Log.d("BUMO_PRINTER_PLUGIN", "BluetoothService.getBondedBluetoothPrinters: finalCount=${printers.size}")
 
         return printers
     }
