@@ -226,6 +226,28 @@ class FlutterPosPrinterPlatformPlugin : FlutterPlugin, MethodCallHandler, Plugin
                 }
             }
 
+            call.method.equals("getBondedBluetoothPrinters") -> {
+                val permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    arrayOf(Manifest.permission.BLUETOOTH_CONNECT)
+                } else {
+                    arrayOf(Manifest.permission.BLUETOOTH)
+                }
+
+                if (!hasPermissions(context, *permissions)) {
+                    if (!isCalledRequestPermission) {
+                        currentActivity?.let { activity ->
+                            isCalledRequestPermission = true
+                            ActivityCompat.requestPermissions(activity, permissions, PERMISSION_ALL)
+                        }
+                    }
+                    result.success(arrayListOf<HashMap<String, Any?>>())
+                } else if (!bluetoothService.mBluetoothAdapter.isEnabled) {
+                    result.success(arrayListOf<HashMap<String, Any?>>())
+                } else {
+                    result.success(bluetoothService.getBondedBluetoothPrinters())
+                }
+            }
+
             call.method.equals("onStartConnection") -> {
                 val address: String? = call.argument("address")
                 val isBle: Boolean? = call.argument("isBle")

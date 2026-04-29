@@ -33,6 +33,14 @@ class PrinterManager {
     }
   }
 
+  Future<List<Map<String, dynamic>>> getBondedBluetoothPrinters() async {
+    if (!Platform.isAndroid) {
+      return <Map<String, dynamic>>[];
+    }
+
+    return bluetoothPrinterOldConnector.getBondedBluetoothPrinters();
+  }
+
   Future<bool> connect(
       {required PrinterType type, required BasePrinterInput model}) async {
     if (type == PrinterType.bluetooth &&

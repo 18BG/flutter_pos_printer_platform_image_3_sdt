@@ -71,6 +71,29 @@ class BluetoothService(mContext: Context, private var bluetoothHandler: Handler?
             ?.sendToTarget()
     }
 
+    fun getBondedBluetoothPrinters(): ArrayList<HashMap<String, Any?>> {
+        val printers = ArrayList<HashMap<String, Any?>>()
+        val pairedDevices: Set<BluetoothDevice>? = mBluetoothAdapter.bondedDevices
+
+        pairedDevices?.forEach { device ->
+            val majorClass = device.bluetoothClass?.majorDeviceClass
+            val deviceName = if (device.name == null) device.address else device.name
+            val deviceMap: HashMap<String, Any?> = HashMap()
+
+            deviceMap["name"] = deviceName
+            deviceMap["address"] = device.address
+            deviceMap["isBle"] = false
+            deviceMap["type"] = "bluetooth"
+            deviceMap["majorClass"] = majorClass
+            deviceMap["isLikelyPrinter"] = majorClass == 1536
+            deviceMap["source"] = "bonded"
+
+            printers.add(deviceMap)
+        }
+
+        return printers
+    }
+
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // Scan ble
     ////////////////////////////////////////////////////////////////////////////////////////////////

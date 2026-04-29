@@ -101,6 +101,20 @@ class BluetoothPrinterConnector
   setName(String name) => this.name = name;
   setIsBle(bool isBle) => this.isBle = isBle;
 
+  Future<List<Map<String, dynamic>>> getBondedBluetoothPrinters() async {
+    if (!Platform.isAndroid) {
+      return <Map<String, dynamic>>[];
+    }
+
+    final List<dynamic>? results =
+        await flutterPrinterChannel.invokeMethod('getBondedBluetoothPrinters');
+
+    return (results ?? <dynamic>[])
+        .whereType<Map>()
+        .map((device) => Map<String, dynamic>.from(device))
+        .toList();
+  }
+
   static DiscoverResult<BluetoothPrinterDevice> discoverPrinters(
       {bool isBle = false}) async {
     if (Platform.isAndroid) {
