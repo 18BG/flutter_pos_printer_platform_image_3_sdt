@@ -231,10 +231,18 @@ class BluetoothService(mContext: Context, private var bluetoothHandler: Handler?
     }
 
     fun sendDataByte(bytes: ByteArray?): Boolean {
-        if (bluetoothConnection?.state == BluetoothConstants.STATE_CONNECTED) {
+        val currentState = bluetoothConnection?.state
+        Log.d("BUMO_PRINTER_PLUGIN", "BluetoothService.sendDataByte: state=$currentState")
+        Log.d("BUMO_PRINTER_PLUGIN", "BluetoothService.sendDataByte: bytesSize=${bytes?.size}")
+
+        if (currentState == BluetoothConstants.STATE_CONNECTED) {
+            Log.d("BUMO_PRINTER_PLUGIN", "BluetoothService.sendDataByte: write before")
             bluetoothConnection?.write(bytes!!)
+            Log.d("BUMO_PRINTER_PLUGIN", "BluetoothService.sendDataByte: write after")
             return true
         }
+
+        Log.d("BUMO_PRINTER_PLUGIN", "BluetoothService.sendDataByte: return false because state is not connected")
         return false
     }
 

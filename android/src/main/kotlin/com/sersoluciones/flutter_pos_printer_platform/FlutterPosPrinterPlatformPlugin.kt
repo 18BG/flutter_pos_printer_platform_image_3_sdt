@@ -272,14 +272,32 @@ class FlutterPosPrinterPlatformPlugin : FlutterPlugin, MethodCallHandler, Plugin
             }
 
             call.method.equals("sendDataByte") -> {
-                if (verifyIsBluetoothIsOn()) {
+                Log.d("BUMO_PRINTER_PLUGIN", "sendDataByte: enter")
+
+                context?.let { appContext ->
+                    Log.d("BUMO_PRINTER_PLUGIN", "sendDataByte: permission ACCESS_FINE_LOCATION=${ActivityCompat.checkSelfPermission(appContext, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED}")
+                    Log.d("BUMO_PRINTER_PLUGIN", "sendDataByte: permission BLUETOOTH=${ActivityCompat.checkSelfPermission(appContext, Manifest.permission.BLUETOOTH) == PackageManager.PERMISSION_GRANTED}")
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                        Log.d("BUMO_PRINTER_PLUGIN", "sendDataByte: permission BLUETOOTH_CONNECT=${ActivityCompat.checkSelfPermission(appContext, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED}")
+                        Log.d("BUMO_PRINTER_PLUGIN", "sendDataByte: permission BLUETOOTH_SCAN=${ActivityCompat.checkSelfPermission(appContext, Manifest.permission.BLUETOOTH_SCAN) == PackageManager.PERMISSION_GRANTED}")
+                    }
+                } ?: Log.d("BUMO_PRINTER_PLUGIN", "sendDataByte: context=null, cannot log permission state")
+
+                val isBluetoothOn = verifyIsBluetoothIsOn()
+                Log.d("BUMO_PRINTER_PLUGIN", "sendDataByte: verifyIsBluetoothIsOn=$isBluetoothOn")
+                Log.d("BUMO_PRINTER_PLUGIN", "sendDataByte: bluetoothConnectionState=${BluetoothService.bluetoothConnection?.state}")
+                Log.d("BUMO_PRINTER_PLUGIN", "sendDataByte: bluetoothConnectionClass=${BluetoothService.bluetoothConnection?.javaClass?.name}")
+                if (isBluetoothOn) {
                     bluetoothService.setHandler(bluetoothHandler)
                     val listInt: ArrayList<Int>? = call.argument("bytes")
+                    Log.d("BUMO_PRINTER_PLUGIN", "sendDataByte: listIntSize=${listInt?.size}")
                     val ints = listInt!!.toIntArray()
                     val bytes = ints.foldIndexed(ByteArray(ints.size)) { i, a, v -> a.apply { set(i, v.toByte()) } }
                     val res = bluetoothService.sendDataByte(bytes)
+                    Log.d("BUMO_PRINTER_PLUGIN", "sendDataByte: sendDataByteResult=$res")
                     result.success(res)
                 } else {
+                    Log.d("BUMO_PRINTER_PLUGIN", "sendDataByte: result=false because bluetooth is not available/on or permissions are missing")
                     result.success(false)
                 }
             }
